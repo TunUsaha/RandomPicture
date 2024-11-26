@@ -1,104 +1,111 @@
-# pyFeats_Project_tool
+# pyFeats Tool
 
-This Python project extracts a `.tar` archive containing multiple subfolders of images, selects random images from each subfolder, splits the dataset into a training and validation set, and moves them into new destination folders while maintaining the subfolder structure.
+**pyFeats** is a set of Python scripts designed to assist in processing and managing image datasets, specifically for tasks like splitting datasets, moving image files, and performing data augmentation. This tool is helpful for organizing and preparing datasets for training machine learning models, especially in image classification tasks.
+
+## Components
+
+This tool consists of the following Python scripts:
+
+- **move_images.py**: A script for moving images from one folder to another based on specific conditions or directories.
+- **split_dataset.py**: A script for splitting a dataset into training and validation sets with a specified ratio.
+- **augmentation.py**: A script for performing image augmentation (rotation, flipping, zooming, etc.) to increase the size of a dataset for training.
 
 ## Features
-- Extracts `.tar` archives.
-- Handles images from nested subfolders.
-- Selects random images from each subfolder.
-- Splits images into training and validation sets (70:30).
-- Maintains the subfolder structure in the destination folders for both training and validation sets.
-- Allows users to adjust the number of images selected from each subfolder.
+
+### 1. `move_images.py`
+- Moves images from one folder to another based on specified criteria (e.g., class-based folders).
+- Maintains folder structure when moving images.
+- Useful for organizing datasets before performing augmentation or splitting.
+
+### 2. `split_dataset.py`
+- Splits dataset into two parts: training and validation sets.
+- Maintains class distribution when splitting the dataset (70:30 ratio, by default).
+- Outputs separate folders for training and validation sets to facilitate model training and evaluation.
+
+### 3. `augmentation.py`
+- Performs data augmentation on the images in the dataset.
+- Includes various augmentation techniques such as rotation, zoom, flipping, etc.
+- Increases the size and diversity of the dataset for model training.
 
 ## Requirements
-- Python 3.6 or higher
+
+- Python 3.x or higher
 - The following Python libraries:
+  - `opencv-python`
+  - `numpy`
+  - `glob`
   - `os`
-  - `random`
   - `shutil`
-  - `tarfile`
+  - `keras` (for image augmentation)
+
+You can install the required libraries with the following command:
+
+```bash
+pip install opencv-python numpy glob2 shutil keras
+```
 
 ## File Structure
+
 ```plaintext
-project/
+pyFeats/
 │
-├── script.py          # Main Python script
-├── README.md          # Documentation for the project
+├── move_images.py      # Script to move images based on directory structure
+├── split_dataset.py    # Script to split dataset into train and validation sets
+├── augmentation.py     # Script to augment images for training
+├── README.md           # Documentation for the project
 │
-├── coffee.tar         # Input TAR archive (example)
-│
-├── coffee_extracted/  # Temporary folder for extracted contents
-│   ├── folder1/
-│   ├── folder2/
+├── your_dataset/   # Folder containing the dataset (example)
+│   ├── class1/
+│   ├── class2/
 │   └── ...
-│
-├── coffee_extracted_train/  # Destination folder for training set
-│   ├── folder1/
-│   │   ├── random_image1.jpg
-│   │   └── random_image2.jpg
-│   ├── folder2/
-│   └── ...
-│
-└── coffee_extracted_val/    # Destination folder for validation set
-    ├── folder1/
-    │   ├── random_image1.jpg
-    │   └── random_image2.jpg
-    ├── folder2/
-    └── ...
+└── your_dataset_train/  # Folder containing training data
+└── your_dataset_val/    # Folder containing validation data
+└── your_dataset_augmentation/  # Folder containing augmented data
 ```
 
 ## How to Use
 
-1. **Setup Environment**
-   - Ensure Python is installed on your system.
-   - Place your `.tar` file (e.g., `coffee.tar`) in the project folder.
+### 1. `move_images.py`
 
-2. **Run the Script**
-   - Update the paths for the `.tar` file and destination folders in the script:
-     ```python
-     tar_path = "path/to/your/coffee.tar"
-     extracted_folder = "path/to/extracted/folder"
-     train_folder = "path/to/coffee_extracted_train"
-     val_folder = "path/to/coffee_extracted_val"
-     ```
-   - Run the script:
-     ```bash
-     python script.py
-     ```
+This script helps you organize and move images between folders.
 
-3. **Result**
-   - Images from each subfolder will be selected randomly and split into two sets: 
-     - 70% will be moved to the `coffee_extracted_train` folder.
-     - 30% will be moved to the `coffee_extracted_val` folder.
-   - The original subfolder structure will be maintained in both `train` and `val` folders.
+- **Input**: The path to the source folder and destination folder.
+- **Usage**:
+  ```bash
+  python move_images.py --source /path/to/source/folder --destination /path/to/destination/folder
+  ```
 
-4. **Optional: Adjust the Split Ratio**
-   - You can adjust the ratio of the training and validation sets by modifying the `split_ratio` parameter in the script (default is 70:30).
+### 2. `split_dataset.py`
 
-## Example Output
-After running the script, the `coffee_extracted_train` and `coffee_extracted_val` folders will look like this:
+This script splits your dataset into training and validation sets, maintaining the class distribution.
 
-```plaintext
-coffee_extracted_train/
-├── folder1/
-│   ├── random_image1.jpg
-│   └── random_image2.jpg
-├── folder2/
-│   ├── random_image3.jpg
-│   └── random_image4.jpg
-└── ...
+- **Input**: The path to the dataset folder, the output path, and the split ratio.
+- **Usage**:
+  ```bash
+  python split_dataset.py --dataset /path/to/dataset --output /path/to/output --split_ratio 0.7
+  ```
 
-coffee_extracted_val/
-├── folder1/
-│   ├── random_image5.jpg
-│   └── random_image6.jpg
-├── folder2/
-│   ├── random_image7.jpg
-│   └── random_image8.jpg
-└── ...
-```
+### 3. `augmentation.py`
+
+This script applies augmentation techniques to your images to increase dataset size for model training.
+
+- **Input**: The path to the dataset folder to be augmented.
+- **Usage**:
+  ```bash
+  python augmentation.py --dataset /path/to/dataset --output /path/to/output
+  ```
+
+## Example Workflow
+
+1. **Organize images**:
+   - Use `move_images.py` to organize images into folders based on class (if needed).
+2. **Split dataset**:
+   - Use `split_dataset.py` to create separate training and validation datasets.
+3. **Augment dataset**:
+   - Use `augmentation.py` to generate augmented images for your training set.
 
 ## Notes
-- The number of images selected from each folder can be adjusted by modifying the `num_images` parameter in the script.
-- The `.tar` file should contain only folders with images for optimal results.
-- Ensure that the extracted images are organized in subfolders inside the `coffee_extracted` folder for proper processing.
+
+- The scripts expect the dataset to be organized into class-based subfolders (e.g., `class1`, `class2`, etc.).
+- Augmentation techniques can be customized in the `augmentation.py` script if needed.
+- The dataset paths in the scripts should be modified to point to the correct directories on your machine or cloud environment.
