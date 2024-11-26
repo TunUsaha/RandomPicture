@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/RandomPicture.iml" filepath="$PROJECT_DIR$/.idea/RandomPicture.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/pyFeats_tool.iml" filepath="$PROJECT_DIR$/.idea/pyFeats_tool.iml" />
     </modules>
   </component>
 </project>
