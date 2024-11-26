@@ -76,4 +76,3 @@ coffee_test/
 - The number of images selected from each folder can be adjusted by modifying the `num_images` parameter in the script.
 - Ensure the `.tar` file contains only folders with images for optimal results.
 
----
