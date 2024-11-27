@@ -1,6 +1,6 @@
-# pyFeats Tool
+# python_data_tool
 
-**pyFeats** is a set of Python scripts designed to assist in processing and managing image datasets, specifically for tasks like splitting datasets, moving image files, and performing data augmentation. This tool is helpful for organizing and preparing datasets for training machine learning models, especially in image classification tasks.
+**python_data_tool** is a set of Python scripts designed to assist in processing and managing image datasets, specifically for tasks like splitting datasets, moving image files, and performing data augmentation. This tool is helpful for organizing and preparing datasets for training machine learning models, especially in image classification tasks.
 
 ## Components
 
