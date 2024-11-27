@@ -1,90 +1,78 @@
-import cv2
 import os
-import glob
+import cv2
 import numpy as np
-import random
-from shutil import copyfile
-
-# Define the path to your dataset folder
-dataset_path = r"C:\652110109\Year3\pyFeats\coffee_extracted_train"
-
-
-# Create a function to perform random image augmentations
-def random_flip(img):
-    """Randomly flip the image horizontally or vertically."""
-    if random.random() > 0.5:
-        img = cv2.flip(img, 0)  # Flip vertically
-    if random.random() > 0.5:
-        img = cv2.flip(img, 1)  # Flip horizontally
-    return img
+from tqdm import tqdm
+from albumentations import (
+    Compose, HorizontalFlip, VerticalFlip, RandomRotate90, ShiftScaleRotate,
+    RandomBrightnessContrast, HueSaturationValue, CLAHE
+)
+from albumentations.core.transforms_interface import ImageOnlyTransform
 
 
-def random_rotation(img):
-    """Randomly rotate the image."""
-    angle = random.randint(-30, 30)  # Random angle between -30 and 30 degrees
-    (h, w) = img.shape[:2]
-    center = (w // 2, h // 2)
-    rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
-    rotated_img = cv2.warpAffine(img, rotation_matrix, (w, h))
-    return rotated_img
+# Create a ToRGB class for converting images to RGB.
+class ToRGB(ImageOnlyTransform):
+    def __init__(self, always_apply=False, p=0.5):
+        super(ToRGB, self).__init__(always_apply=always_apply, p=p)
+
+    def apply(self, img, **params):
+        if len(img.shape) == 2 or img.shape[2] != 3: # Check if it is grayscale or not RGB
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+        return img
 
 
-def adjust_brightness(img):
-    """Randomly adjust the brightness of the image."""
-    factor = random.uniform(0.5, 1.5)  # Random factor between 0.5 and 1.5
-    img = cv2.convertScaleAbs(img, alpha=factor, beta=0)
-    return img
+
+# Functions for augmentation
+def augment_image(image):
+    augmentations = Compose([
+        HorizontalFlip(p=0.5),
+        VerticalFlip(p=0.5),
+        RandomRotate90(p=0.5),
+        ShiftScaleRotate(shift_limit=0.05, scale_limit=0.1, rotate_limit=25, p=0.5),
+        RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.5),
+        HueSaturationValue(hue_shift_limit=10, sat_shift_limit=10, val_shift_limit=10, p=0.5),
+        CLAHE(clip_limit=2.0, tile_grid_size=(8, 8), p=0.5),
+        ToRGB(p=0.3)  # Add ToRGB and randomly change the image color to RGB.
+    ])
+    augmented = augmentations(image=image)
+    return augmented['image']
 
 
-def random_crop(img, target_size=(500, 500)):
-    """Randomly crop the image to the target size."""
-    h, w = img.shape[:2]
-    crop_h, crop_w = target_size
-    x = random.randint(0, w - crop_w)
-    y = random.randint(0, h - crop_h)
-    cropped_img = img[y:y + crop_h, x:x + crop_w]
-    return cropped_img
+# The main function is for adding images to each folder.
+def balance_dataset(data_dir, target_count=100):
+    for class_folder in tqdm(os.listdir(data_dir), desc="Processing classes"):
+        class_path = os.path.join(data_dir, class_folder)
+        if not os.path.isdir(class_path):
+            continue
+
+        images = [os.path.join(class_path, f) for f in os.listdir(class_path) if f.endswith(('.jpg', '.png', '.jpeg'))]
+        image_count = len(images)
+
+        if image_count >= target_count:
+            print(f"Class {class_folder} already has {image_count} images.")
+            continue
+
+        # Add photos until the desired number is reached.
+        while image_count < target_count:
+            for img_path in images:
+                if image_count >= target_count:
+                    break
+
+                # Load images
+                image = cv2.imread(img_path)
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+                # augmentation
+                augmented_image = augment_image(image)
+
+                # Save the augmented image
+                save_path = os.path.join(class_path, f"aug_{image_count}.jpg")
+                augmented_image = cv2.cvtColor(augmented_image, cv2.COLOR_RGB2BGR)
+                cv2.imwrite(save_path, augmented_image)
+                image_count += 1
 
 
-def augment_image(img):
-    """Apply random augmentation to the image."""
-    img = random_flip(img)
-    img = random_rotation(img)
-    img = adjust_brightness(img)
-    img = random_crop(img)
-    return img
+# Set the path of the dataset.
+dataset_path = "C:/652110109/Year3/coffee_train"
 
-
-# Iterate through each class folder
-class_folders = sorted(
-    [os.path.join(dataset_path, d) for d in os.listdir(dataset_path) if os.path.isdir(os.path.join(dataset_path, d))])
-
-# Iterate through each class folder and perform augmentation
-for class_folder in class_folders:
-    class_name = os.path.basename(class_folder)
-    augmented_folder = f"{class_folder}_augmentation"
-
-    # Create a new folder to store augmented images
-    if not os.path.exists(augmented_folder):
-        os.makedirs(augmented_folder)
-
-    # Get all image files in the current class folder
-    image_files = sorted(glob.glob(os.path.join(class_folder, "*")))
-
-    for image_file in image_files:
-        # Read the image
-        img = cv2.imread(image_file)
-
-        if img is not None:
-            # Perform augmentation
-            augmented_img = augment_image(img)
-
-            # Save the augmented image to the new folder
-            base_name = os.path.basename(image_file)
-            augmented_image_path = os.path.join(augmented_folder, base_name)
-            cv2.imwrite(augmented_image_path, augmented_img)
-
-            # Optional: Save the original image in the augmented folder as well (if needed)
-            # copyfile(image_file, augmented_image_path)
-
-print("Augmentation completed successfully!")
+# call function
+balance_dataset(dataset_path, target_count=100)
